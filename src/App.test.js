@@ -33,6 +33,16 @@ const directionMapping = [
     {key: 'northEast', value: 45, label: 'NORTH EAST'}
 ];
 
+const boardSize = [
+    '*****',
+    '*****',
+    '*****',
+    '*****',
+    '*****'
+];
+
+const mockCommandList = 'PLACE 1,2,EAST>MOVE>MOVE>LEFT>MOVE';
+
 const getMappedDirection = (directionInput) => {
     const directionObj = directionMapping.find((direction) => {
         return direction.label === directionInput;
@@ -64,8 +74,8 @@ const moveCommand = ({currentPosition, currentDirection, maxSize = 5, minSize = 
     }
 
     if(currentDirection === 180) {
-        if(currentPosition.y + 1 < maxSize) {
-            currentPosition.y += 1;
+        if(currentPosition.y - 1 > minSize) {
+            currentPosition.y -= 1;
         }
     }
 
@@ -76,8 +86,8 @@ const moveCommand = ({currentPosition, currentDirection, maxSize = 5, minSize = 
     }
 
     if(currentDirection === 0 || currentDirection === 360) {
-        if(currentPosition.y - 1 > minSize) {
-            currentPosition.y -= 1;
+        if(currentPosition.y + 1 < maxSize) {
+            currentPosition.y += 1;
         }
     }
     return {direction: currentDirection, position: currentPosition};
@@ -99,15 +109,9 @@ const rightCommand = (currentFace) => {
     return 90;
 };
 
-const boardSize = [
-    '*****',
-    '*****',
-    '*****',
-    '*****',
-    '*****'
-];
-
-const mockCommandList = 'PLACE 1,2,EAST>MOVE>MOVE>LEFT>MOVE';
+const reportCommand = (robot) => {
+  console.log('Current robot position:', robot);
+};
 
 class Robot {
     constructor({position, direction} = {}) {
@@ -122,6 +126,7 @@ function robotApp(rawCommandList = mockCommandList) {
     //loop for command
     // set position start in array
     let robot = new Robot;
+    let reportTriggered = false;
 
     commandList.forEach((command) => {
         if (placeReg.test(command)) {
@@ -139,12 +144,13 @@ function robotApp(rawCommandList = mockCommandList) {
             robot = {...robot, direction: rightCommand(robot.direction)};
         }
         if (command === 'REPORT') {
-            reportCommand();
+            reportCommand(robot);
+            reportTriggered = true;
         }
-        console.log('robot => ', robot);
     });
-
-    return robot;
+    if(reportTriggered) {
+        return robot;
+    }
 }
 
 describe('toy robot game', () => {
@@ -171,7 +177,7 @@ describe('toy robot game', () => {
             expect(moveCommand({currentPosition: {x: 0, y: 0}, currentDirection: 0})).toMatchObject({
                 position: {
                     x: 0,
-                    y: 0
+                    y: 1
                 },
                 direction: 0
             });
@@ -185,7 +191,7 @@ describe('toy robot game', () => {
             expect(moveCommand({currentPosition: {x: 0, y: 0}, currentDirection: 180})).toMatchObject({
                 position: {
                     x: 0,
-                    y: 1
+                    y: 0
                 },
                 direction: 180
             });
@@ -199,7 +205,7 @@ describe('toy robot game', () => {
             expect(moveCommand({currentPosition: {x: 0, y: 0}, currentDirection: 0})).toMatchObject({
                 position: {
                     x: 0,
-                    y: 0
+                    y: 1
                 },
                 direction: 0
             });
@@ -213,7 +219,7 @@ describe('toy robot game', () => {
             expect(moveCommand({currentPosition: {x: 0, y: 5}, currentDirection: 180})).toMatchObject({
                 position: {
                     x: 0,
-                    y: 5
+                    y: 4
                 },
                 direction: 180
             });
@@ -240,18 +246,15 @@ describe('toy robot game', () => {
             expect(boardSize.length).toBe(5);
         });
 
-        it('place robot in board', () => {
-            expect(robotApp()).toMatchObject({
+        it('command robot on the board', () => {
+            const mockCommandList = 'PLACE 4,2,EAST>MOVE>MOVE>LEFT>MOVE>REPORT';
+            expect(robotApp(mockCommandList)).toMatchObject({
                 position: {
-                    x: 0,
-                    y: 0
+                    x: 4,
+                    y: 3
                 },
-                direction: 180
+                direction: 0
             });
         });
-    });
-
-    describe('render input toggle', () => {
-
     });
 });
