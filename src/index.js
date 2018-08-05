@@ -1,8 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+// Transpile all code following this line with babel and use 'env' (aka ES6) preset.
+require('babel-register')({
+    presets: [ 'env' ]
+});
 
-ReactDOM.render(<App />, document.getElementById('root'));
-registerServiceWorker();
+// Import the rest of our application.
+module.exports = require('./init.js');
